@@ -1,9 +1,9 @@
 services:
   - type: web
     name: olms-frontend
-    env: static
+    runtime: static
     buildCommand: npm install && sed -i "s|http://localhost:8000/api|${API_URL}|g" src/environments/environment.ts && sed -i "s|your-google-client-id.apps.googleusercontent.com|${GOOGLE_CLIENT_ID}|g" src/environments/environment.ts && npm run build
-    publishPath: dist/online-learning-management-system-frontend/browser
+    staticPublishPath: dist/online-learning-management-system-frontend/browser
     rootDir: Frontend
     envVars:
       - key: API_URL
@@ -17,12 +17,15 @@ services:
 
   - type: web
     name: olms-backend-monolith
-    env: docker
+    runtime: docker
     dockerContext: Backend
     dockerfilePath: Dockerfile.monolith
+    healthCheckPath: /
     envVars:
       - key: DATABASE_URL
-        sync: false # Set this in the Render Dashboard with your postgresql:// string
+        fromDatabase:
+          name: olms-postgres
+          property: connectionString
       - key: PORT
         value: 8000
       - key: JWT_SECRET
@@ -32,6 +35,8 @@ services:
       - key: ADMIN_PASSWORD
         value: Admin@123
       - key: RABBITMQ_HOST
+        value: rabbitmq
+      - key: RabbitMQ__Host
         value: rabbitmq
       - key: RABBITMQ_USER
         value: guest
@@ -74,18 +79,22 @@ services:
       - key: Smtp__SenderName
         value: "LMS Notifications"
     
-  - type: pvt-service
+  - type: pserv
     name: rabbitmq
-    image: rabbitmq:3-management
+    runtime: image
+    image:
+      url: docker.io/library/rabbitmq:3-management
     envVars:
       - key: RABBITMQ_DEFAULT_USER
         value: guest
       - key: RABBITMQ_DEFAULT_PASS
         value: guest
 
-  - type: pvt-service
+  - type: pserv
     name: meilisearch
-    image: getmeili/meilisearch:latest
+    runtime: image
+    image:
+      url: docker.io/getmeili/meilisearch:latest
     envVars:
       - key: MEILI_MASTER_KEY
         value: masterKey123
@@ -96,16 +105,23 @@ services:
       mountPath: /meili_data
       sizeGB: 1
 
-  - type: pvt-service
+  - type: pserv
     name: minio
-    image: minio/minio
+    runtime: image
+    image:
+      url: docker.io/minio/minio:latest
     envVars:
       - key: MINIO_ROOT_USER
         value: minioadmin
       - key: MINIO_ROOT_PASSWORD
         value: minioadmin
-    command: server /data --console-address ":9001"
+    dockerCommand: server /data --console-address ":9001"
     disk:
       name: minio-data
       mountPath: /data
       sizeGB: 1
+
+databases:
+  - name: olms-postgres
+    databaseName: olms
+    user: olms
