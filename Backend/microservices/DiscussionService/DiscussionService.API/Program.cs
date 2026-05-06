@@ -12,17 +12,6 @@ using DiscussionService.Infrastructure.Data;
 using DiscussionService.Infrastructure.Repositories;
 using SharedKernel.Utilities;
 
-// --- Custom .env Loader (Fix: Needs 3 levels to reach root) ---
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), "../../../docker/.env");
-if (File.Exists(envPath))
-{
-    foreach (var line in File.ReadAllLines(envPath))
-    {
-        var parts = line.Split('=', 2);
-        if (parts.Length == 2) Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim().Trim('"'));
-    }
-}
-
 var builder = WebApplication.CreateBuilder(args);
 
 // --- Clean Logging Configuration ---

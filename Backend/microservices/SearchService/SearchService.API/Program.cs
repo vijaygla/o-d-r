@@ -8,17 +8,6 @@ using SearchService.Infrastructure.Services;
 using MassTransit;
 using SearchService.Application.Consumers;
 
-// --- Custom .env Loader ---
-var envPath = Path.Combine(Directory.GetCurrentDirectory(), "../../../docker/.env");
-if (File.Exists(envPath))
-{
-    foreach (var line in File.ReadAllLines(envPath))
-    {
-        var parts = line.Split('=', 2);
-        if (parts.Length == 2) Environment.SetEnvironmentVariable(parts[0].Trim(), parts[1].Trim().Trim('"'));
-    }
-}
-
 var builder = WebApplication.CreateBuilder(args);
 
 // MassTransit Configuration
