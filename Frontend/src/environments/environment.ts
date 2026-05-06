@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8000/api',
-  googleClientId: 'your-google-client-id.apps.googleusercontent.com'
+  apiUrl: 'PLACEHOLDER_API_URL',
+  googleClientId: 'PLACEHOLDER_GOOGLE_CLIENT_ID'
 };
