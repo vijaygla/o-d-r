@@ -1,0 +1,154 @@
+<div class="min-h-screen pt-28 pb-20 bg-slate-50">
+  <div class="container mx-auto px-6">
+    <div class="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div>
+        <h1 class="text-4xl font-black text-slate-900 mb-2 uppercase tracking-tight">Student Hub</h1>
+        <p class="text-slate-500 font-medium">Synchronized with Enrollment & Progress Microservices</p>
+      </div>
+      <button routerLink="/courses" class="px-6 py-3 rounded-2xl bg-primary-600 text-white font-black uppercase tracking-widest text-xs hover:shadow-xl hover:shadow-primary-600/20 transition-all flex items-center gap-2 self-start">
+        Find New Courses
+        <lucide-icon [name]="ArrowRight" size="18"></lucide-icon>
+      </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12" *ngIf="stats$ | async as stats; else loadingStats">
+      <div *ngFor="let stat of stats" class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm flex items-center gap-5 hover:border-primary-100 transition-colors group">
+        <div [class]="'w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform ' + stat.bg + ' ' + stat.color">
+          <lucide-icon [name]="stat.icon" size="32"></lucide-icon>
+        </div>
+        <div>
+          <div class="text-3xl font-black text-slate-900 leading-none mb-1">{{stat.value}}</div>
+          <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{stat.label}}</div>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #loadingStats>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div *ngFor="let i of [1,2,3,4]" class="bg-white p-6 rounded-[2rem] border border-slate-100 h-28 animate-pulse"></div>
+      </div>
+    </ng-template>
+
+    <div class="grid lg:grid-cols-3 gap-10">
+      <!-- Enrolled Courses -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="text-2xl font-black text-slate-900 uppercase tracking-widest text-sm">Active Learning</h2>
+          <span class="px-3 py-1 rounded-full bg-slate-200 text-slate-500 text-[10px] font-black uppercase tracking-widest" *ngIf="enrolledCourses$ | async as courses">
+            {{courses.length}} ENROLLED
+          </span>
+        </div>
+
+        <div class="space-y-6" *ngIf="enrolledCourses$ | async as courses; else loadingCourses">
+          <div *ngFor="let course of courses" class="bg-white p-5 rounded-[2.5rem] border border-slate-100 shadow-sm hover:shadow-xl hover:shadow-primary-600/5 transition-all group">
+            <div class="flex flex-col sm:flex-row items-center gap-8">
+              <div class="w-full sm:w-44 aspect-video rounded-3xl overflow-hidden flex-shrink-0 relative">
+                <img [src]="course.thumbnailUrl" [alt]="course.title" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700">
+                <div class="absolute inset-0 bg-primary-600/10 group-hover:bg-transparent transition-colors"></div>
+              </div>
+              <div class="flex-1 w-full">
+                <div class="flex justify-between items-start mb-3">
+                  <div>
+                    <span class="text-[10px] font-black text-primary-500 uppercase tracking-widest mb-1 block">{{course.category}}</span>
+                    <h3 class="text-xl font-black text-slate-900 leading-tight group-hover:text-primary-600 transition-colors cursor-pointer" [routerLink]="['/learn', course.id]">
+                      {{course.title}}
+                    </h3>
+                  </div>
+                </div>
+                
+                <div class="flex items-center justify-between text-[10px] font-black uppercase tracking-widest mb-3">
+                  <span [class]="course.progress === 100 ? 'text-emerald-500' : 'text-slate-400'">
+                    {{course.progress === 100 ? 'COMPLETED' : course.progress + '% MASTERED'}}
+                  </span>
+                  <span class="text-slate-400" *ngIf="course.progress < 100">CONT. STUDYING</span>
+                </div>
+                
+                <div class="w-full h-3 bg-slate-100 rounded-full overflow-hidden p-0.5">
+                  <div class="h-full rounded-full transition-all duration-1000 ease-out" 
+                       [class]="course.progress === 100 ? 'bg-emerald-500' : 'bg-primary-600'"
+                       [style.width.%]="course.progress">
+                    <div class="h-full w-full bg-white/20 animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+              <button [routerLink]="['/learn', course.id]" class="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-600 group-hover:bg-slate-900 group-hover:text-white group-hover:border-slate-900 transition-all flex-shrink-0 shadow-sm">
+                <lucide-icon [name]="ChevronRight" size="28"></lucide-icon>
+              </button>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="courses.length === 0" class="py-20 text-center bg-white rounded-[3rem] border-2 border-dashed border-slate-200">
+            <div class="w-20 h-20 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-6 text-slate-300">
+              <lucide-icon [name]="BookOpen" size="40"></lucide-icon>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-2 uppercase tracking-widest">No Active Enrollments</h3>
+            <p class="text-slate-500 mb-8 max-w-xs mx-auto">You haven't enrolled in any courses yet. Start your learning journey today!</p>
+            <button routerLink="/courses" class="btn-primary px-8 py-3">Browse Catalog</button>
+          </div>
+        </div>
+
+        <ng-template #loadingCourses>
+          <div class="space-y-6">
+            <div *ngFor="let i of [1,2,3]" class="bg-white p-5 rounded-[2.5rem] border border-slate-100 h-36 animate-pulse"></div>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Sidebar -->
+      <div class="space-y-10">
+        <!-- Featured Action -->
+        <div>
+          <h2 class="text-2xl font-black text-slate-900 mb-8 uppercase tracking-widest text-sm">Resume Learning</h2>
+          <div class="bg-slate-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group shadow-2xl shadow-slate-900/20">
+            <div class="relative z-10">
+              <span class="inline-block px-3 py-1.5 rounded-full bg-primary-600 text-[10px] font-black tracking-widest mb-6 uppercase">Syncing Now</span>
+              <h3 class="text-2xl font-black mb-2 leading-tight">Ready to continue your last lesson?</h3>
+              <p class="text-slate-400 text-sm mb-8">Your progress is saved across all devices automatically.</p>
+              
+              <button class="w-full py-4 rounded-2xl bg-white text-slate-900 font-black uppercase tracking-widest text-xs hover:bg-primary-500 hover:text-white transition-all duration-300 flex items-center justify-center gap-3 group/btn">
+                <lucide-icon [name]="PlayCircle" size="20" class="fill-current"></lucide-icon>
+                Jump Back In
+              </button>
+            </div>
+            <!-- Decorative gradient -->
+            <div class="absolute -bottom-10 -right-10 w-48 h-48 bg-primary-600/40 rounded-full blur-[80px] group-hover:scale-150 transition-transform duration-1000"></div>
+            <div class="absolute -top-10 -left-10 w-32 h-32 bg-indigo-600/20 rounded-full blur-[60px]"></div>
+          </div>
+        </div>
+
+        <!-- Certificates -->
+        <div>
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-2xl font-black text-slate-900 uppercase tracking-widest text-sm">Achievements</h2>
+            <lucide-icon [name]="Award" class="text-amber-500" size="20"></lucide-icon>
+          </div>
+          
+          <div class="space-y-4" *ngIf="certificates$ | async as certs; else noCerts">
+            <div *ngFor="let cert of certs" class="flex items-center gap-5 p-5 rounded-3xl border border-slate-100 bg-white hover:border-primary-200 hover:shadow-lg transition-all cursor-pointer group">
+              <div class="w-14 h-14 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-sm border border-amber-100">
+                <lucide-icon [name]="Award" size="28"></lucide-icon>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-black text-slate-900 text-sm truncate uppercase tracking-tight">{{cert.courseName}}</div>
+                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">ISSUED {{cert.issueDate | date}}</div>
+              </div>
+            </div>
+            
+            <div *ngIf="certs.length === 0" class="p-8 rounded-[2rem] border-2 border-dashed border-slate-100 text-center">
+              <lucide-icon [name]="Award" class="mx-auto text-slate-200 mb-3" size="32"></lucide-icon>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Complete courses to earn certificates</p>
+            </div>
+          </div>
+          
+          <ng-template #noCerts>
+             <div class="space-y-4">
+               <div *ngFor="let i of [1,2]" class="bg-white p-5 rounded-3xl border border-slate-100 h-24 animate-pulse"></div>
+             </div>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

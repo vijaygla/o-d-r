@@ -1,0 +1,34 @@
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
+WORKDIR /src
+
+# Copy everything
+COPY . .
+
+# Publish all services
+RUN dotnet publish microservices/AssessmentService/AssessmentService.API/AssessmentService.API.csproj -c Release -o /app/publish/AssessmentService
+RUN dotnet publish microservices/CategoryService/CategoryService.API/CategoryService.API.csproj -c Release -o /app/publish/CategoryService
+RUN dotnet publish microservices/CertificateService/CertificateService.API/CertificateService.API.csproj -c Release -o /app/publish/CertificateService
+RUN dotnet publish microservices/ContentService/ContentService.API/ContentService.API.csproj -c Release -o /app/publish/ContentService
+RUN dotnet publish microservices/CourseService/CourseService.API/CourseService.API.csproj -c Release -o /app/publish/CourseService
+RUN dotnet publish microservices/DiscussionService/DiscussionService.API/DiscussionService.API.csproj -c Release -o /app/publish/DiscussionService
+RUN dotnet publish microservices/EnrollmentService/EnrollmentService.API/EnrollmentService.API.csproj -c Release -o /app/publish/EnrollmentService
+RUN dotnet publish microservices/IdentityService/IdentityService.API/IdentityService.API.csproj -c Release -o /app/publish/IdentityService
+RUN dotnet publish microservices/MediaService/MediaService.API/MediaService.API.csproj -c Release -o /app/publish/MediaService
+RUN dotnet publish microservices/NotificationService/NotificationService.API/NotificationService.API.csproj -c Release -o /app/publish/NotificationService
+RUN dotnet publish microservices/PaymentService/PaymentService.API/PaymentService.API.csproj -c Release -o /app/publish/PaymentService
+RUN dotnet publish microservices/ProgressService/ProgressService.API/ProgressService.API.csproj -c Release -o /app/publish/ProgressService
+RUN dotnet publish microservices/ReviewService/ReviewService.API/ReviewService.API.csproj -c Release -o /app/publish/ReviewService
+RUN dotnet publish microservices/SearchService/SearchService.API/SearchService.API.csproj -c Release -o /app/publish/SearchService
+RUN dotnet publish microservices/UserService/UserService.API/UserService.API.csproj -c Release -o /app/publish/UserService
+RUN dotnet publish gateway/ApiGateway/ApiGateway.csproj -c Release -o /app/publish/ApiGateway
+
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:10.0
+WORKDIR /app
+COPY --from=build /app/publish .
+COPY start.sh .
+RUN chmod +x start.sh
+
+EXPOSE 8000
+
+ENTRYPOINT ["/bin/bash", "./start.sh"]

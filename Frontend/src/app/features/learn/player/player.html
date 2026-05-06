@@ -1,0 +1,345 @@
+<div class="h-screen flex flex-col bg-slate-50" *ngIf="course$ | async as course">
+  <!-- Header -->
+  <header class="h-16 bg-slate-900 flex items-center justify-between px-6 shrink-0">
+    <div class="flex items-center gap-6">
+      <a routerLink="/student/dashboard" class="text-white hover:text-primary-400 transition-colors">
+        <lucide-icon [name]="ChevronLeft" size="24"></lucide-icon>
+      </a>
+      <h1 class="text-white font-bold text-lg truncate max-w-md">{{course.title}}</h1>
+    </div>
+    <div class="flex items-center gap-4">
+      <div class="hidden md:flex flex-col items-end">
+        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Your Progress</div>
+        <div class="flex items-center gap-3">
+          <div class="h-1.5 w-32 bg-slate-700 rounded-full overflow-hidden">
+            <div class="h-full w-[35%] bg-primary-500"></div>
+          </div>
+          <span class="text-white font-bold text-sm">35%</span>
+        </div>
+      </div>
+      <button class="btn-primary py-2 px-4 text-sm">Share Course</button>
+    </div>
+  </header>
+
+  <div class="flex-1 flex overflow-hidden" *ngIf="sections$ | async as sections; else loadingContent">
+    <!-- Main Player Area -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <div class="flex-1 overflow-y-auto p-8" *ngIf="currentLesson">
+        <!-- Lesson Content -->
+        <div class="max-w-4xl mx-auto">
+          <div class="aspect-video bg-black rounded-3xl overflow-hidden mb-8 shadow-2xl relative group">
+            <ng-container [ngSwitch]="currentLesson.contentType">
+              <!-- Video Content -->
+              <div *ngSwitchCase="'Video'" class="w-full h-full">
+                <iframe *ngIf="currentLesson.contentUrl; else noVideoUrl" [src]="getSafeUrl(currentLesson.contentUrl)" class="w-full h-full" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                <ng-template #noVideoUrl>
+                  <div class="w-full h-full flex flex-col items-center justify-center text-white relative">
+                    <lucide-icon [name]="Play" size="64" class="opacity-50"></lucide-icon>
+                    <span class="mt-4 text-slate-400 font-medium">Video URL not provided</span>
+                  </div>
+                </ng-template>
+              </div>
+
+              <!-- PDF Content -->
+              <div *ngSwitchCase="'PDF'" class="w-full h-full bg-slate-100 flex items-center justify-center">
+                <iframe *ngIf="currentLesson.contentUrl; else noPdfUrl" [src]="getSafeUrl(currentLesson.contentUrl)" class="w-full h-full" type="application/pdf"></iframe>
+                <ng-template #noPdfUrl>
+                  <div class="w-full h-full flex flex-col items-center justify-center text-slate-500 relative">
+                    <lucide-icon [name]="FileText" size="64" class="opacity-50"></lucide-icon>
+                    <span class="mt-4 text-slate-400 font-medium">PDF URL not provided</span>
+                  </div>
+                </ng-template>
+              </div>
+
+              <!-- Text/Other Content -->
+              <div *ngSwitchDefault class="w-full h-full bg-white p-8 overflow-y-auto prose prose-slate flex flex-col items-center justify-center">
+                <div *ngIf="currentLesson.contentUrl; else noTextContent" class="text-center">
+                  <lucide-icon [name]="FileText" size="64" class="opacity-50 mx-auto text-primary-500 mb-4"></lucide-icon>
+                  <a [href]="currentLesson.contentUrl" target="_blank" class="px-6 py-3 bg-primary-50 text-primary-600 rounded-xl font-bold hover:bg-primary-100 transition-colors inline-block">View External Document</a>
+                </div>
+                <ng-template #noTextContent>
+                  <div class="w-full h-full flex flex-col items-center justify-center text-slate-500">
+                    <lucide-icon [name]="FileText" size="64" class="opacity-50"></lucide-icon>
+                    <span class="mt-4 text-slate-400 font-medium">Text content URL not provided</span>
+                  </div>
+                </ng-template>
+              </div>
+            </ng-container>
+            
+            <!-- Content Info Overlay -->
+            <div class="absolute top-6 left-6 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div class="w-2 h-2 rounded-full bg-primary-500 animate-pulse"></div>
+              <span class="text-xs font-bold uppercase tracking-widest text-white/90">{{currentLesson.contentType}}</span>
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex items-center gap-8 border-b border-slate-200 mb-8">
+            <button (click)="setTab('overview')" 
+                    [class]="'pb-4 text-sm font-bold transition-colors relative ' + (activeTab === 'overview' ? 'text-primary-600' : 'text-slate-500 hover:text-slate-700')">
+              Overview
+              <div *ngIf="activeTab === 'overview'" class="absolute bottom-0 left-0 right-0 h-1 bg-primary-600 rounded-t-full"></div>
+            </button>
+            <button (click)="setTab('quiz')" 
+                    [class]="'pb-4 text-sm font-bold transition-colors relative ' + (activeTab === 'quiz' ? 'text-primary-600' : 'text-slate-500 hover:text-slate-700')">
+              Quiz & Assessment
+              <div *ngIf="activeTab === 'quiz'" class="absolute bottom-0 left-0 right-0 h-1 bg-primary-600 rounded-t-full"></div>
+            </button>
+            <button (click)="setTab('discussion')" 
+                    [class]="'pb-4 text-sm font-bold transition-colors relative ' + (activeTab === 'discussion' ? 'text-primary-600' : 'text-slate-500 hover:text-slate-700')">
+              Discussion
+              <div *ngIf="activeTab === 'discussion'" class="absolute bottom-0 left-0 right-0 h-1 bg-primary-600 rounded-t-full"></div>
+            </button>
+            <button (click)="setTab('resources')" 
+                    [class]="'pb-4 text-sm font-bold transition-colors relative ' + (activeTab === 'resources' ? 'text-primary-600' : 'text-slate-500 hover:text-slate-700')">
+              Resources
+              <div *ngIf="activeTab === 'resources'" class="absolute bottom-0 left-0 right-0 h-1 bg-primary-600 rounded-t-full"></div>
+            </button>
+          </div>
+
+          <!-- Tab Content -->
+          <div [ngSwitch]="activeTab" class="pb-12">
+            <!-- Overview -->
+            <div *ngSwitchCase="'overview'" class="animate-in fade-in slide-in-from-bottom-2">
+              <div class="flex items-center gap-3 mb-4">
+                <span class="px-2.5 py-1 rounded-lg bg-primary-50 text-primary-600 text-[10px] font-black uppercase tracking-widest border border-primary-100">
+                  Lesson {{activeLessonIndex + 1}}
+                </span>
+                <span class="text-slate-400 text-xs font-bold">•</span>
+                <span class="text-slate-500 text-xs font-bold uppercase tracking-widest">{{currentLesson.contentType}} CONTENT</span>
+              </div>
+              <h2 class="text-3xl font-black text-slate-900 mb-6 leading-tight">{{currentLesson.title}}</h2>
+              <div class="prose prose-slate max-w-none">
+                <p class="text-lg text-slate-600 mb-8 leading-relaxed">
+                  {{currentLesson.description}}
+                </p>
+                <div class="p-8 rounded-3xl bg-slate-900 text-white flex gap-6 shadow-xl shadow-slate-900/10">
+                  <div class="w-12 h-12 rounded-2xl bg-primary-500 flex items-center justify-center shrink-0">
+                    <lucide-icon [name]="HelpCircle" class="text-white"></lucide-icon>
+                  </div>
+                  <div>
+                    <h4 class="font-bold text-white text-lg mb-1 text-primary-400">Mastery Checklist</h4>
+                    <p class="text-slate-400 text-sm mb-4 italic">Before moving on, ensure you've understood the following:</p>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-3 list-none p-0">
+                      <li class="flex items-center gap-2 text-slate-300 text-sm">
+                        <lucide-icon [name]="CheckCircle2" size="14" class="text-primary-400"></lucide-icon>
+                        Core architectural principles
+                      </li>
+                      <li class="flex items-center gap-2 text-slate-300 text-sm">
+                        <lucide-icon [name]="CheckCircle2" size="14" class="text-primary-400"></lucide-icon>
+                        Best practices for implementation
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Quiz -->
+            <div *ngSwitchCase="'quiz'" class="animate-in fade-in slide-in-from-bottom-2">
+              <div *ngIf="quiz$ | async as quiz; else noQuiz">
+                <div *ngIf="!quizResult; else resultTpl" class="space-y-8">
+                  <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm">
+                    <h3 class="text-2xl font-bold mb-2">{{quiz.title}}</h3>
+                    <p class="text-slate-500 mb-8">{{quiz.description}}</p>
+
+                    <div class="space-y-12">
+                      <div *ngFor="let question of quiz.questions; let i = index" class="space-y-6">
+                        <div class="flex items-start gap-4">
+                          <span class="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-sm shrink-0">{{i + 1}}</span>
+                          <h4 class="text-xl font-bold text-slate-900 pt-0.5">{{question.text}}</h4>
+                        </div>
+                        <div class="grid gap-3 pl-12">
+                          <label *ngFor="let option of question.options; let optIdx = index" 
+                                 class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 cursor-pointer transition-colors group">
+                            <input type="radio" [name]="'question-' + i" [(ngModel)]="selectedAnswers[i]" [value]="optIdx" class="w-5 h-5 text-primary-600 focus:ring-primary-500 border-slate-300">
+                            <span class="text-slate-700 font-medium">{{option}}</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="mt-12 pt-8 border-t border-slate-100 flex justify-end">
+                      <button (click)="submitQuiz(quiz.id)" [disabled]="isSubmittingQuiz || selectedAnswers.length < quiz.questions.length" class="btn-primary px-8 py-3 flex items-center gap-2">
+                        <lucide-icon *ngIf="isSubmittingQuiz" [name]="Loader2" class="animate-spin" size="18"></lucide-icon>
+                        {{isSubmittingQuiz ? 'Submitting...' : 'Submit Assessment'}}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <ng-template #resultTpl>
+                  <div class="p-12 rounded-3xl bg-white border border-slate-200 shadow-sm text-center">
+                    <div class="w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-6" 
+                         [class]="quizResult?.isPassed ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'">
+                      <lucide-icon [name]="quizResult?.isPassed ? CheckCircle2 : HelpCircle" size="48"></lucide-icon>
+                    </div>
+                    <h3 class="text-3xl font-bold mb-2">{{quizResult?.isPassed ? 'Congratulations!' : 'Keep Practicing!'}}</h3>
+                    <p class="text-slate-500 mb-8">You scored {{quizResult?.score}}% in the {{quiz.title}}.</p>
+                    
+                    <div class="flex justify-center gap-4">
+                      <button (click)="resetQuiz()" class="btn-secondary px-8 py-3">Retake Quiz</button>
+                      <button *ngIf="quizResult?.isPassed" (click)="setTab('overview')" class="btn-primary px-8 py-3">Continue Learning</button>
+                    </div>
+                  </div>
+                </ng-template>
+              </div>
+              <ng-template #noQuiz>
+                <div class="text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+                  <lucide-icon [name]="Trophy" class="mx-auto text-slate-300 mb-4" size="48"></lucide-icon>
+                  <p class="text-slate-500 font-medium">No quiz available for this course yet.</p>
+                </div>
+              </ng-template>
+            </div>
+
+            <!-- Discussion -->
+            <div *ngSwitchCase="'discussion'" class="animate-in fade-in slide-in-from-bottom-2 space-y-8">
+              <!-- New Thread Form -->
+              <div class="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm">
+                <h3 class="text-xl font-bold mb-6">Ask a Question</h3>
+                <div class="space-y-4">
+                  <input type="text" [(ngModel)]="newThreadTitle" placeholder="What's your question about?" 
+                         class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none">
+                  <textarea [(ngModel)]="newThreadContent" rows="4" placeholder="Describe your question in detail..." 
+                            class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none resize-none"></textarea>
+                  <div class="flex justify-end">
+                    <button (click)="createThread(course.id)" [disabled]="isCreatingThread || !newThreadTitle || !newThreadContent" class="btn-primary px-8 py-3 flex items-center gap-2">
+                      <lucide-icon *ngIf="isCreatingThread" [name]="Loader2" class="animate-spin" size="18"></lucide-icon>
+                      {{isCreatingThread ? 'Posting...' : 'Post Question'}}
+                      <lucide-icon [name]="Send" size="18"></lucide-icon>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Thread List -->
+              <div class="space-y-6">
+                <div *ngFor="let thread of threads$ | async" class="p-8 rounded-3xl bg-white border border-slate-200 shadow-sm hover:border-primary-200 transition-colors">
+                  <div class="flex items-start gap-4 mb-6">
+                    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-500">
+                      {{thread.studentName.charAt(0)}}
+                    </div>
+                    <div class="flex-1">
+                      <div class="flex items-center justify-between mb-1">
+                        <h4 class="font-bold text-slate-900">{{thread.title}}</h4>
+                        <span class="text-xs text-slate-400">{{thread.createdAt | date:'short'}}</span>
+                      </div>
+                      <p class="text-sm text-slate-500">Asked by <span class="font-semibold text-slate-700">{{thread.studentName}}</span></p>
+                    </div>
+                  </div>
+                  <p class="text-slate-600 mb-6 leading-relaxed">{{thread.content}}</p>
+                  
+                  <!-- Replies -->
+                  <div *ngIf="thread.replies.length > 0" class="pl-8 border-l-2 border-slate-100 space-y-6 mt-6">
+                    <div *ngFor="let reply of thread.replies" class="relative">
+                      <div class="flex items-center gap-3 mb-2">
+                        <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold" 
+                             [class]="reply.isInstructor ? 'bg-primary-100 text-primary-700' : 'bg-slate-100 text-slate-500'">
+                          {{reply.userName.charAt(0)}}
+                        </div>
+                        <span class="font-bold text-sm" [class]="reply.isInstructor ? 'text-primary-700' : 'text-slate-900'">
+                          {{reply.userName}}
+                          <span *ngIf="reply.isInstructor" class="ml-2 px-1.5 py-0.5 rounded bg-primary-100 text-[10px] uppercase tracking-wider">Instructor</span>
+                        </span>
+                        <span class="text-[10px] text-slate-400">{{reply.createdAt | date:'short'}}</span>
+                      </div>
+                      <p class="text-sm text-slate-600 pl-11">{{reply.content}}</p>
+                    </div>
+                  </div>
+
+                  <div class="mt-8 flex items-center gap-4 pl-11">
+                    <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center text-slate-300">
+                      <lucide-icon [name]="User" size="14"></lucide-icon>
+                    </div>
+                    <input type="text" placeholder="Add a reply..." class="flex-1 bg-slate-50 border-none rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary-500">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Resources (Placeholder) -->
+            <div *ngSwitchCase="'resources'" class="animate-in fade-in slide-in-from-bottom-2 text-center py-20 bg-white rounded-3xl border border-dashed border-slate-200">
+              <lucide-icon [name]="FileText" class="mx-auto text-slate-300 mb-4" size="48"></lucide-icon>
+              <p class="text-slate-500 font-medium">No downloadable resources for this lesson.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto py-20 text-center" *ngIf="!currentLesson">
+          <div class="w-20 h-20 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-6">
+            <lucide-icon [name]="Loader2" class="animate-spin text-slate-400" size="32"></lucide-icon>
+          </div>
+          <h3 class="text-xl font-bold text-slate-900 mb-2">Fetching your lesson...</h3>
+          <p class="text-slate-500">This will only take a moment.</p>
+        </div>
+      </div>
+
+      <!-- Navigation Footer -->
+      <footer class="h-20 bg-white border-t border-slate-200 flex items-center justify-between px-8 shrink-0">
+        <button (click)="previousLesson()" class="flex items-center gap-2 text-slate-600 font-bold hover:text-slate-900 transition-colors group">
+          <lucide-icon [name]="ChevronLeft" size="20" class="group-hover:-translate-x-1 transition-transform"></lucide-icon>
+          Previous
+        </button>
+        <button (click)="nextLesson()" class="btn-primary px-8 py-3 flex items-center gap-2">
+          Next Lesson
+          <lucide-icon [name]="ChevronRight" size="20"></lucide-icon>
+        </button>
+      </footer>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="w-96 bg-white border-l border-slate-200 flex flex-col shrink-0 relative z-10 shadow-[-10px_0_30px_rgba(0,0,0,0.02)]">
+      <div class="p-6 border-b border-slate-200 bg-white">
+        <h3 class="font-black text-slate-900 uppercase tracking-widest text-sm">Course Content</h3>
+        <p class="text-[10px] text-slate-400 font-bold uppercase mt-1">{{currentSections.length}} Sections • Dynamic from API</p>
+      </div>
+      <div class="flex-1 overflow-y-auto custom-scrollbar">
+        <div *ngFor="let section of sections; let modIdx = index">
+          <div class="px-6 py-4 bg-slate-50/80 border-b border-slate-100 font-black text-[10px] text-slate-400 uppercase tracking-[0.2em] flex items-center justify-between">
+            <span>Section {{modIdx + 1}}: {{section.title}}</span>
+            <span class="px-2 py-0.5 rounded-full bg-slate-200/50 text-slate-500 text-[9px]">{{section.lessons.length}} Lessons</span>
+          </div>
+          <div *ngFor="let lesson of section.lessons; let lesIdx = index" 
+               (click)="selectLesson(modIdx, lesIdx)"
+               [class]="'flex items-center gap-4 px-6 py-5 cursor-pointer transition-all border-b border-slate-50 group ' + (activeModuleIndex === modIdx && activeLessonIndex === lesIdx ? 'bg-primary-50/50 border-l-[6px] border-l-primary-600 pl-[18px]' : 'hover:bg-slate-50/80')">
+            
+            <div class="relative shrink-0">
+              <lucide-icon [name]="lesson.completed ? CheckCircle2 : Play" 
+                          [class]="lesson.completed ? 'text-emerald-500' : (activeModuleIndex === modIdx && activeLessonIndex === lesIdx ? 'text-primary-600' : 'text-slate-300 group-hover:text-primary-400')" 
+                          [size]="activeModuleIndex === modIdx && activeLessonIndex === lesIdx ? 20 : 18"></lucide-icon>
+              <div *ngIf="activeModuleIndex === modIdx && activeLessonIndex === lesIdx" class="absolute -inset-2 bg-primary-500/10 rounded-full -z-10 animate-ping"></div>
+            </div>
+
+            <div class="flex-1 min-w-0">
+              <div [class]="'text-sm font-bold truncate transition-colors ' + (activeModuleIndex === modIdx && activeLessonIndex === lesIdx ? 'text-primary-900' : 'text-slate-600 group-hover:text-slate-900')">
+                {{lesson.title}}
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1 flex items-center gap-3 font-bold uppercase tracking-widest">
+                <span class="flex items-center gap-1">
+                  <lucide-icon [name]="FileText" size="10"></lucide-icon>
+                  {{lesson.contentType}}
+                </span>
+                <span *ngIf="lesson.order" class="text-slate-300">|</span>
+                <span *ngIf="lesson.order">Step {{lesson.order}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Loading State -->
+  <ng-template #loadingContent>
+    <div class="flex-1 flex flex-col items-center justify-center bg-white">
+      <div class="relative">
+        <div class="w-24 h-24 rounded-full border-4 border-slate-100"></div>
+        <div class="w-24 h-24 rounded-full border-4 border-primary-600 border-t-transparent animate-spin absolute top-0 left-0"></div>
+        <lucide-icon [name]="Loader2" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary-600 animate-pulse" size="32"></lucide-icon>
+      </div>
+      <h2 class="text-2xl font-black text-slate-900 mt-8 uppercase tracking-widest">Initializing Player</h2>
+      <p class="text-slate-400 mt-2 font-medium">Synchronizing with Content Microservice...</p>
+    </div>
+  </ng-template>
+
+</div>

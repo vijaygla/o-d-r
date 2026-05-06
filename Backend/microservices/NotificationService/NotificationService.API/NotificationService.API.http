@@ -1,0 +1,16 @@
+@NotificationService_HostAddress = http://localhost:8010
+
+### Health Check
+GET {{NotificationService_HostAddress}}/health
+
+### Root Status
+GET {{NotificationService_HostAddress}}/
+
+### RabbitMQ Management UI
+# Use this to monitor queues and message flow.
+# Default credentials: guest / guest
+GET http://localhost:15672
+
+### Mailhog Web UI (Email Inbox)
+# All emails sent by the Notification Service in development will appear here.
+GET http://localhost:8025

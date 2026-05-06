@@ -1,0 +1,41 @@
+@ReviewService_HostAddress = http://localhost:8009
+@Gateway_HostAddress = http://localhost:5000
+@AuthToken = your-jwt-token-here
+@courseId = d7826501-3c46-42c3-a3cc-1113960a1532
+@reviewId = 4240e847-8153-4132-a32d-7c61973173fd
+
+### Create a Review
+# Access: Student (Enrolled)
+POST {{ReviewService_HostAddress}}/api/reviews
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseId}}",
+  "rating": 5,
+  "comment": "Excellent course! Highly recommended."
+}
+
+### Update a Review
+# Access: Student (Owner)
+PUT {{ReviewService_HostAddress}}/api/reviews/{{reviewId}}
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "comment": "Actually, it was great, but could use more examples."
+}
+
+### Delete a Review
+# Access: Student (Owner) or Admin
+DELETE {{ReviewService_HostAddress}}/api/reviews/{{reviewId}}
+Authorization: Bearer {{AuthToken}}
+
+### Get Course Reviews
+# Access: Public
+GET {{ReviewService_HostAddress}}/api/reviews/course/{{courseId}}
+
+### Get Course Average Rating
+# Access: Public
+GET {{ReviewService_HostAddress}}/api/reviews/course/{{courseId}}/rating

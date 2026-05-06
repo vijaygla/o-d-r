@@ -1,0 +1,111 @@
+services:
+  - type: web
+    name: olms-frontend
+    env: static
+    buildCommand: npm install && sed -i "s|http://localhost:8000/api|${API_URL}|g" src/environments/environment.ts && sed -i "s|your-google-client-id.apps.googleusercontent.com|${GOOGLE_CLIENT_ID}|g" src/environments/environment.ts && npm run build
+    publishPath: dist/online-learning-management-system-frontend/browser
+    rootDir: Frontend
+    envVars:
+      - key: API_URL
+        value: https://olms-backend-monolith.onrender.com/api
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+
+  - type: web
+    name: olms-backend-monolith
+    env: docker
+    dockerContext: Backend
+    dockerfilePath: Dockerfile.monolith
+    envVars:
+      - key: DATABASE_URL
+        sync: false # Set this in the Render Dashboard with your postgresql:// string
+      - key: PORT
+        value: 8000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@olms.com
+      - key: ADMIN_PASSWORD
+        value: Admin@123
+      - key: RABBITMQ_HOST
+        value: rabbitmq
+      - key: RABBITMQ_USER
+        value: guest
+      - key: RABBITMQ_PASSWORD
+        value: guest
+      - key: FRONTEND_URL
+        value: https://olms-frontend.onrender.com
+      - key: MEILI_URL
+        value: http://meilisearch:7700
+      - key: MEILI_MASTER_KEY
+        value: masterKey123
+      - key: MinIO__Endpoint
+        value: minio:9000
+      - key: MinIO__AccessKey
+        value: minioadmin
+      - key: MinIO__SecretKey
+        value: minioadmin
+      - key: MinIO__BucketName
+        value: olms-media
+      - key: Stripe__PublishableKey
+        sync: false
+      - key: Stripe__SecretKey
+        sync: false
+      - key: Stripe__WebhookSecret
+        sync: false
+      - key: Google__ClientId
+        sync: false
+      - key: Google__ClientSecret
+        sync: false
+      - key: Smtp__Host
+        value: "smtp.gmail.com"
+      - key: Smtp__Port
+        value: "587"
+      - key: Smtp__Username
+        sync: false
+      - key: Smtp__Password
+        sync: false
+      - key: Smtp__SenderEmail
+        value: "noreply@lms.com"
+      - key: Smtp__SenderName
+        value: "LMS Notifications"
+    
+  - type: pvt-service
+    name: rabbitmq
+    image: rabbitmq:3-management
+    envVars:
+      - key: RABBITMQ_DEFAULT_USER
+        value: guest
+      - key: RABBITMQ_DEFAULT_PASS
+        value: guest
+
+  - type: pvt-service
+    name: meilisearch
+    image: getmeili/meilisearch:latest
+    envVars:
+      - key: MEILI_MASTER_KEY
+        value: masterKey123
+      - key: MEILI_NO_ANALYTICS
+        value: "true"
+    disk:
+      name: meili-data
+      mountPath: /meili_data
+      sizeGB: 1
+
+  - type: pvt-service
+    name: minio
+    image: minio/minio
+    envVars:
+      - key: MINIO_ROOT_USER
+        value: minioadmin
+      - key: MINIO_ROOT_PASSWORD
+        value: minioadmin
+    command: server /data --console-address ":9001"
+    disk:
+      name: minio-data
+      mountPath: /data
+      sizeGB: 1

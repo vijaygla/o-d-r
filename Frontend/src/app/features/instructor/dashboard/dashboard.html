@@ -1,0 +1,159 @@
+<div class="min-h-screen pt-28 pb-20 bg-slate-50">
+  <div class="container mx-auto px-6">
+    <div class="mb-12 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div>
+        <h1 class="text-4xl font-black text-slate-900 mb-2 uppercase tracking-tight">Instructor Hub</h1>
+        <p class="text-slate-500 font-medium">Empowering experts to share knowledge globally.</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <button (click)="showCategoryModal = true" class="px-8 py-4 rounded-[2rem] bg-white border border-slate-200 text-slate-900 font-black uppercase tracking-widest text-xs hover:bg-slate-50 transition-all flex items-center gap-3">
+          <lucide-icon [name]="Plus" size="20"></lucide-icon>
+          Add New Category
+        </button>
+        <button routerLink="/instructor/builder" class="px-8 py-4 rounded-[2rem] bg-slate-900 text-white font-black uppercase tracking-widest text-xs hover:bg-primary-600 hover:shadow-2xl hover:shadow-primary-600/30 transition-all flex items-center gap-3">
+          <lucide-icon [name]="Plus" size="20"></lucide-icon>
+          Create New Course
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16" *ngIf="stats$ | async as stats; else loadingStats">
+      <div *ngFor="let stat of stats" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 shadow-sm hover:border-primary-100 transition-colors group">
+        <div class="flex items-center justify-between mb-6">
+          <div [class]="'w-16 h-16 rounded-2xl flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform ' + stat.bg + ' ' + stat.color">
+            <lucide-icon [name]="stat.icon" size="32"></lucide-icon>
+          </div>
+          <div class="flex items-center gap-1 text-emerald-600 text-[10px] font-black bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100">
+            <lucide-icon [name]="TrendingUp" size="12"></lucide-icon>
+            +12.5%
+          </div>
+        </div>
+        <div class="text-3xl font-black text-slate-900 leading-none mb-1 tracking-tighter">{{stat.value}}</div>
+        <div class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{stat.label}}</div>
+      </div>
+    </div>
+
+    <ng-template #loadingStats>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16">
+        <div *ngFor="let i of [1,2,3,4]" class="bg-white p-8 rounded-[2.5rem] border border-slate-100 h-40 animate-pulse"></div>
+      </div>
+    </ng-template>
+
+    <!-- Courses Table -->
+    <div class="bg-white rounded-[3rem] border border-slate-100 shadow-xl shadow-slate-200/50 overflow-hidden">
+      <div class="p-8 border-b border-slate-100 flex items-center justify-between bg-white">
+        <h2 class="text-xl font-black text-slate-900 uppercase tracking-widest text-sm">Active Curriculum</h2>
+        <a href="#" class="text-[10px] font-black text-primary-600 uppercase tracking-widest hover:text-primary-700 transition-colors">Manage All Assets</a>
+      </div>
+      
+      <div class="overflow-x-auto" *ngIf="myCoursesWithStats$ | async as courses; else loadingCourses">
+        <table class="w-full text-left">
+          <thead>
+            <tr class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">
+              <th class="px-8 py-6">Course Concept</th>
+              <th class="px-8 py-6">Status</th>
+              <th class="px-8 py-6">Enrollments</th>
+              <th class="px-8 py-6">Revenue</th>
+              <th class="px-8 py-6">Performance</th>
+              <th class="px-8 py-6 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            <tr *ngFor="let course of courses" class="hover:bg-slate-50 transition-colors group">
+              <td class="px-8 py-6">
+                <div class="flex items-center gap-5">
+                  <div class="w-20 h-12 rounded-xl overflow-hidden flex-shrink-0 shadow-lg shadow-black/5">
+                    <img [src]="course.thumbnailUrl" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="text-sm font-black text-slate-800 line-clamp-1 group-hover:text-primary-600 cursor-pointer transition-colors" [routerLink]="['/instructor/builder', course.id]">{{course.title}}</div>
+                </div>
+              </td>
+              <td class="px-8 py-6">
+                <span class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-widest border border-emerald-200">Live</span>
+              </td>
+              <td class="px-8 py-6">
+                <div class="text-sm font-black text-slate-700">{{course.enrollmentCount}}</div>
+              </td>
+              <td class="px-8 py-6">
+                <div class="text-sm font-black text-emerald-600">${{course.revenue | number:'1.2-2'}}</div>
+              </td>
+              <td class="px-8 py-6">
+                <div class="flex items-center gap-2">
+                  <lucide-icon [name]="Star" class="text-amber-400 fill-amber-400" size="14"></lucide-icon>
+                  <span class="text-sm font-black text-slate-700">{{course.rating}}</span>
+                </div>
+              </td>
+              <td class="px-8 py-6 text-right">
+                <div class="flex items-center justify-end gap-3">
+                   <button [routerLink]="['/instructor/builder', course.id]" class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-all flex items-center justify-center">
+                    <lucide-icon [name]="Plus" size="20"></lucide-icon>
+                  </button>
+                  <button class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center justify-center">
+                    <lucide-icon [name]="MoreVertical" size="20"></lucide-icon>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="courses.length === 0">
+              <td colspan="6" class="px-8 py-20 text-center">
+                <div class="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mx-auto mb-4 text-slate-300">
+                  <lucide-icon [name]="BookOpen" size="32"></lucide-icon>
+                </div>
+                <h3 class="text-lg font-black text-slate-900 mb-1 uppercase tracking-tight">No Courses Found</h3>
+                <p class="text-slate-400 text-sm mb-6">You haven't created any courses yet. Start sharing your knowledge!</p>
+                <button routerLink="/instructor/builder" class="btn-primary px-8 py-3 mx-auto">Create Your First Course</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-template #loadingCourses>
+        <div class="p-20 text-center">
+          <lucide-icon [name]="Loader2" class="animate-spin text-primary-600 mx-auto mb-4" size="48"></lucide-icon>
+          <p class="text-slate-500 font-bold uppercase tracking-widest text-xs">Synchronizing Curriculum Data...</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+
+  <!-- Category Creation Modal -->
+  <div *ngIf="showCategoryModal" class="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+    <div class="bg-white rounded-[2.5rem] w-full max-w-lg p-10 shadow-2xl animate-in zoom-in-95 duration-300">
+      <div class="flex items-center justify-between mb-8">
+        <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Create Category</h3>
+        <button (click)="showCategoryModal = false" class="w-10 h-10 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center hover:bg-slate-100 transition-colors">
+          <lucide-icon [name]="Plus" class="rotate-45" size="20"></lucide-icon>
+        </button>
+      </div>
+
+      <div class="space-y-6">
+        <div>
+          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Category Name</label>
+          <input type="text" [(ngModel)]="newCategory.name" placeholder="e.g. Artificial Intelligence" 
+                 class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-bold text-slate-900">
+        </div>
+        <div>
+          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Description (Optional)</label>
+          <textarea [(ngModel)]="newCategory.description" rows="4" placeholder="Briefly describe what this category covers..." 
+                    class="w-full px-6 py-4 rounded-2xl bg-slate-50 border border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-medium text-slate-600 resize-none"></textarea>
+        </div>
+      </div>
+
+      <!-- Error Message Display -->
+      <div *ngIf="errorMessage" class="mt-6 p-4 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 text-xs font-bold flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+        <div class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
+        {{errorMessage}}
+      </div>
+
+      <div class="mt-10 flex gap-4">
+        <button (click)="showCategoryModal = false" class="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-600 font-black uppercase tracking-widest text-[10px] hover:bg-slate-200 transition-colors">Cancel</button>
+        <button (click)="createCategory()" [disabled]="!newCategory.name || isCreatingCategory" class="flex-1 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase tracking-widest text-[10px] hover:bg-primary-600 transition-all flex items-center justify-center gap-2">
+          <lucide-icon *ngIf="isCreatingCategory" [name]="Loader2" class="animate-spin" size="14"></lucide-icon>
+          {{isCreatingCategory ? 'Creating...' : 'Create Category'}}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

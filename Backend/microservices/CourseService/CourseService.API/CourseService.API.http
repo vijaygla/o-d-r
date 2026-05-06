@@ -1,0 +1,51 @@
+@CourseService_HostAddress = http://localhost:8003
+@AuthToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJodHRwOi8vc2NoZW1hcy54bWxzb2FwLm9yZy93cy8yMDA1LzA1L2lkZW50aXR5L2NsYWltcy9uYW1laWRlbnRpZmllciI6IjJiZDMzNWQwLWE4YmEtNDI1Ny1iMDZmLWFhZWJkZjQ3NGFkYyIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL25hbWUiOiJTdHVkZW50MSIsImh0dHA6Ly9zY2hlbWFzLnhtbHNvYXAub3JnL3dzLzIwMDUvMDUvaWRlbnRpdHkvY2xhaW1zL2VtYWlsYWRkcmVzcyI6InN0dWRlbnQxQGdtYWlsLmNvbSIsImh0dHA6Ly9zY2hlbWFzLm1pY3Jvc29mdC5jb20vd3MvMjAwOC8wNi9pZGVudGl0eS9jbGFpbXMvcm9sZSI6IlN0dWRlbnQiLCJleHAiOjE3Nzc0NDg2NzMsImlzcyI6IklkZW50aXR5U2VydmljZSIsImF1ZCI6IklkZW50aXR5U2VydmljZUNsaWVudHMifQ.ilQN-8x-jyLE1DhQ5iqHuYswCSVIskyLu-NhJhJLZHs
+
+### [ANYONE] Get All Courses
+# Used by: Students and Guests to browse available learning material
+GET {{CourseService_HostAddress}}/api/Courses
+
+### [ANYONE] Get Course By ID
+# Instruction: Paste the Course ID (Guid) at the end of the URL to see details
+GET {{CourseService_HostAddress}}/api/Courses/ba8a39e1-522b-4031-92dd-e70d32c0e4cb
+
+### [INSTRUCTOR/ADMIN] Create Course
+# Used by: Instructors to launch a new course
+# Instruction: Paste a valid Category ID from the Category Service
+POST {{CourseService_HostAddress}}/api/Courses
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "title": "Deep Learning Course",
+  "description": "This is deep leaning course by instructor",
+  "categoryId": "8f3771b0-8367-4493-80aa-9e4453ad16a7",
+  "price": 49.99
+}
+
+### [INSTRUCTOR/ADMIN] Update Course
+# Instruction: Paste the Course ID in the URL to update its details
+PUT {{CourseService_HostAddress}}/api/Courses/ba8a39e1-522b-4031-92dd-e70d32c0e4cb
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "title": "Advanced Machine Learning",
+  "description": "Deep dive into Neural Networks and Transformers",
+  "price": 79.99
+}
+
+### [ADMIN] Update Course Status
+# Instruction: Use this to Approve or Reject a course (Status: Pending=0, Active=1, Rejected=2)
+PATCH {{CourseService_HostAddress}}/api/Courses/ba8a39e1-522b-4031-92dd-e70d32c0e4cb/status
+Authorization: Bearer {{AuthToken}}
+Content-Type: application/json
+
+{
+  "status": 1
+}
+
+### [INSTRUCTOR/ADMIN] Delete Course
+# Instruction: Paste the Course ID in the URL to remove it from the system
+DELETE {{CourseService_HostAddress}}/api/Courses/ba8a39e1-522b-4031-92dd-e70d32c0e4cb
+Authorization: Bearer {{AuthToken}}

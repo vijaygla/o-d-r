@@ -1,0 +1,125 @@
+# .NET
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+*.user
+*.userosscache
+*.sln.doccache
+*.lscache
+*.suo
+*.user
+*.userosscache
+*.sln.doccache
+*.cache
+project.assets.json
+project.nuget.cache
+*.nupkg
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Angular
+/Frontend/dist/
+/Frontend/.angular/
+/Frontend/tmp/
+/Frontend/out-tsc/
+
+# Environments
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build output
+**/bin/
+**/obj/
+**/out/
+**/publish/
+**/TestResults/
+
+# Logs
+*.log
+logs/
+stdout.log
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+**/secrets.json
+**/appsettings.json
+**/appsettings.Development.json
+**/appsettings.Local.json
+**/appsettings.*.local.json
+*.pfx
+*.snk
+*.key
+*.pem
+*.crt
+
+# User-specific files
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# IDE/editor
+.vs/
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Package caches
+packages/
+*.nupkg
+*.snupkg
+
+# Coverage and analysis
+coverage/
+coverage.*
+*.coverage
+*.coveragexml
+
+# Node artifacts if frontend tooling is added later
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Docker overrides and local compose files
+docker-compose.override.yml
+docker-compose.*.local.yml
+
+# Database and local storage artifacts
+*.mdf
+*.ldf
+*.db
+*.sqlite
+*.sqlite3
+*.db-shm
+*.db-wal
+**/wwwroot/profile-pictures/*
+Backend/microservices/UserService/UserService.API/profile.jpg
+
+# microsercise app setting
+*.appsettings.json
+
+appsettings.Development.json
+.env
+
+

@@ -1,0 +1,116 @@
+<div class="min-h-screen pt-28 pb-20 bg-slate-50" *ngIf="course$ | async as course">
+  <div class="container mx-auto px-6 max-w-5xl">
+    <div class="flex flex-col lg:flex-row gap-12">
+      <!-- Form Area -->
+      <div class="flex-1">
+        <h1 class="text-3xl font-bold text-slate-900 mb-8">Checkout</h1>
+        
+        <div class="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm mb-8">
+          <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+            <lucide-icon [name]="CreditCard" class="text-primary-600" size="24"></lucide-icon>
+            Payment Method
+          </h2>
+          
+          <form [formGroup]="checkoutForm" (ngSubmit)="onSubmit()" class="space-y-6">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Name on Card</label>
+              <input 
+                type="text" 
+                formControlName="cardName"
+                placeholder="Vijay Kumar"
+                class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none"
+              >
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold text-slate-700 mb-2">Card Number</label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  formControlName="cardNumber"
+                  placeholder="0000 0000 0000 0000"
+                  class="w-full pl-12 pr-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-mono"
+                >
+                <lucide-icon [name]="CreditCard" class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size="18"></lucide-icon>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">Expiration Date</label>
+                <input 
+                  type="text" 
+                  formControlName="expiry"
+                  placeholder="MM/YY"
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-mono"
+                >
+              </div>
+              <div>
+                <label class="block text-sm font-semibold text-slate-700 mb-2">CVC</label>
+                <input 
+                  type="text" 
+                  formControlName="cvc"
+                  placeholder="123"
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all outline-none font-mono"
+                >
+              </div>
+            </div>
+
+            <button 
+              type="submit" 
+              [disabled]="checkoutForm.invalid || isLoading"
+              class="btn-primary w-full py-4 text-lg flex items-center justify-center gap-2 group disabled:opacity-70"
+            >
+              <lucide-icon *ngIf="isLoading" [name]="Loader2" class="animate-spin" size="24"></lucide-icon>
+              <span *ngIf="!isLoading">Complete Purchase</span>
+              <lucide-icon *ngIf="!isLoading" [name]="ArrowRight" class="group-hover:translate-x-1 transition-transform" size="20"></lucide-icon>
+            </button>
+          </form>
+        </div>
+
+        <div class="flex items-center justify-center gap-8 text-slate-400">
+          <div class="flex items-center gap-2">
+            <lucide-icon [name]="ShieldCheck" size="18"></lucide-icon>
+            <span class="text-xs font-bold uppercase tracking-wider">Secure Payment</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <lucide-icon [name]="Lock" size="18"></lucide-icon>
+            <span class="text-xs font-bold uppercase tracking-wider">SSL Encrypted</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Order Summary -->
+      <div class="lg:w-80">
+        <h2 class="text-xl font-bold text-slate-900 mb-8">Order Summary</h2>
+        <div class="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm">
+          <div class="flex gap-4 mb-6 pb-6 border-b border-slate-100">
+            <div class="w-20 h-14 rounded-lg overflow-hidden flex-shrink-0">
+              <img [src]="course.thumbnailUrl" class="w-full h-full object-cover">
+            </div>
+            <div class="text-sm">
+              <div class="font-bold text-slate-900 line-clamp-2 mb-1">{{course.title}}</div>
+              <div class="text-slate-500 text-xs">{{course.instructorName}}</div>
+            </div>
+          </div>
+
+          <div class="space-y-4 text-sm mb-6 pb-6 border-b border-slate-100">
+            <div class="flex justify-between">
+              <span class="text-slate-500">Original Price</span>
+              <span class="text-slate-900 font-medium">$199.99</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-slate-500">Discount</span>
+              <span class="text-emerald-600 font-medium">-$100.00</span>
+            </div>
+          </div>
+
+          <div class="flex justify-between items-center text-xl font-bold">
+            <span class="text-slate-900">Total</span>
+            <span class="text-primary-600">${{course.price}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
