@@ -173,11 +173,11 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
-// --- NEW: Security Headers for Google Auth ---
+// --- Security Headers for Google Auth ---
 app.Use(async (context, next) =>
 {
     context.Response.Headers.Append("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
-    context.Response.Headers.Append("Cross-Origin-Embedder-Policy", "require-corp");
+    // Removed require-corp to fix cross-origin fetching and OAuth bugs
     await next();
 });
 
