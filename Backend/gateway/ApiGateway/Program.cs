@@ -36,34 +36,18 @@ app.UseRouting();
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "OLMS API Gateway v1");
+    options.SwaggerEndpoint("v1/swagger.json", "OLMS API Gateway v1");
     options.RoutePrefix = "swagger";
 });
 
-// Use a more robust redirect for the root
-app.MapGet("/", async context => 
-{
-    context.Response.Redirect("/swagger");
-    await Task.CompletedTask;
-});
+// Redirect root to swagger
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 // Map the reverse proxy middleware
 app.MapReverseProxy();
 
-var portStr = Environment.GetEnvironmentVariable("PORT") ?? "8000";
-if (!int.TryParse(portStr, out int port)) port = 8000;
-
-PortReclaimer.Reclaim(port);
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8000";
 
 Console.WriteLine($"🚀 API Gateway is running on port {port}");
-
-// Dynamic display of routes based on configuration
-var proxyConfig = builder.Configuration.GetSection("ReverseProxy:Clusters");
-Console.WriteLine("🔗 Routing Overview:");
-foreach (var cluster in proxyConfig.GetChildren())
-{
-    var address = cluster.GetSection("Destinations:destination1:Address").Value;
-    Console.WriteLine($"  - {cluster.Key}: {address}");
-}
 
 app.Run($"http://0.0.0.0:{port}");
