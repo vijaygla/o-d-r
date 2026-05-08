@@ -110,30 +110,23 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+_ = Task.Run(async () =>
 {
-    var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
+    await Task.Delay(5000); // Wait 5 seconds for the service to start listening
+    using var scope = app.Services.CreateScope();
     try
     {
+        var dbContext = scope.ServiceProvider.GetRequiredService<UserDbContext>();
         var databaseCreator = dbContext.GetService<IRelationalDatabaseCreator>();
         if (!databaseCreator.Exists()) databaseCreator.Create();
-        
-        try 
-        { 
-            databaseCreator.CreateTables(); 
-        } 
-        catch 
-        { 
-            // Tables might already exist, which is fine in a shared database environment
-        }
-        
-        Console.WriteLine("✅ Database connected successfully!");
+        try { databaseCreator.CreateTables(); } catch { }
+        Console.WriteLine("✅ Database initialized successfully!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Database connection error: {ex.Message}");
+        Console.WriteLine($"❌ Database initialization error: {ex.Message}");
     }
-}
+});
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>

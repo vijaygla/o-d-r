@@ -113,11 +113,21 @@ builder.Services.AddSwaggerGen(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+// --- Non-blocking Database Initialization ---
+_ = Task.Run(async () =>
 {
+    await Task.Delay(2000); // Give the app a moment to start the web server first
+    using var scope = app.Services.CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     try
     {
+        Console.WriteLine("⏳ Attempting database connection...");
+        var canConnect = await dbContext.Database.CanConnectAsync();
+        if (!canConnect) {
+             Console.WriteLine("⚠️ Could not connect to database. It might still be starting up.");
+             return;
+        }
+
         var databaseCreator = dbContext.GetService<IRelationalDatabaseCreator>();
         if (!databaseCreator.Exists()) databaseCreator.Create();
         
@@ -127,7 +137,7 @@ using (var scope = app.Services.CreateScope())
         } 
         catch 
         { 
-            // Tables might already exist, which is fine in a shared database environment
+            // Tables might already exist
         }
 
         // --- Seed Admin User ---
@@ -151,20 +161,14 @@ using (var scope = app.Services.CreateScope())
                 dbContext.SaveChanges();
                 Console.WriteLine($"👑 Admin user created: {adminEmail}");
             }
-            else if (adminUser.Role != "Admin")
-            {
-                adminUser.Role = "Admin";
-                dbContext.SaveChanges();
-                Console.WriteLine($"👑 User promoted to Admin: {adminEmail}");
-            }
         }
-        Console.WriteLine("✅ Database connected successfully!");
+        Console.WriteLine("✅ Database initialized successfully!");
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"❌ Database connection error: {ex.Message}");
+        Console.WriteLine($"❌ Database initialization error: {ex.Message}");
     }
-}
+});
 
 app.UseSwagger();
 app.UseSwaggerUI(options =>

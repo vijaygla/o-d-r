@@ -49,5 +49,8 @@ dotnet /app/DiscussionService/DiscussionService.API.dll &
 echo "Starting ApiGateway..."
 dotnet /app/ApiGateway/ApiGateway.dll &
 
-# Wait for all background processes
-wait -n
+echo "✅ All services initiated. Monitoring..."
+
+# Keep the container alive even if background services crash (Render will handle health checks)
+# Use a simple wait to keep the script running
+wait
