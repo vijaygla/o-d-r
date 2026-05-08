@@ -19,10 +19,15 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost", "/", h =>
+        var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
+        var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
+        var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest";
+        var rabbitVHost = Environment.GetEnvironmentVariable("RabbitMQ__VHost") ?? "/";
+
+        cfg.Host(rabbitHost, rabbitVHost, h =>
         {
-            h.Username(Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest");
-            h.Password(Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest");
+            h.Username(rabbitUser);
+            h.Password(rabbitPass);
         });
 
         cfg.ReceiveEndpoint("search-course-approved", e =>

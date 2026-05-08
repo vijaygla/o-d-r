@@ -51,10 +51,14 @@ builder.Services.AddMassTransit(x =>
     x.UsingRabbitMq((context, cfg) =>
     {
         var rabbitHost = Environment.GetEnvironmentVariable("RabbitMQ__Host") ?? "localhost";
-        cfg.Host(rabbitHost, "/", h =>
+        var rabbitUser = Environment.GetEnvironmentVariable("RabbitMQ__User") ?? "guest";
+        var rabbitPass = Environment.GetEnvironmentVariable("RabbitMQ__Password") ?? "guest";
+        var rabbitVHost = Environment.GetEnvironmentVariable("RabbitMQ__VHost") ?? "/";
+
+        cfg.Host(rabbitHost, rabbitVHost, h =>
         {
-            h.Username("guest");
-            h.Password("guest");
+            h.Username(rabbitUser);
+            h.Password(rabbitPass);
         });
     });
 });

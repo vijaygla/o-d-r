@@ -40,8 +40,6 @@ builder.Services.AddDbContext<UserDbContext>(options =>
 builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
 builder.Services.AddScoped<IUserService, UserService.Application.Services.UserService>();
 
-var rabbitMqHost = Environment.GetEnvironmentVariable("RabbitMQ__Host") ?? "localhost";
-
 builder.Services.AddMassTransit(x =>
 {
     x.AddConsumer<UserCreatedConsumer>();
@@ -50,10 +48,15 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host(rabbitMqHost, "/", h =>
+        var rabbitHost = Environment.GetEnvironmentVariable("RabbitMQ__Host") ?? "localhost";
+        var rabbitUser = Environment.GetEnvironmentVariable("RabbitMQ__User") ?? "guest";
+        var rabbitPass = Environment.GetEnvironmentVariable("RabbitMQ__Password") ?? "guest";
+        var rabbitVHost = Environment.GetEnvironmentVariable("RabbitMQ__VHost") ?? "/";
+
+        cfg.Host(rabbitHost, rabbitVHost, h =>
         {
-            h.Username(Environment.GetEnvironmentVariable("RabbitMQ__User") ?? "guest");
-            h.Password(Environment.GetEnvironmentVariable("RabbitMQ__Password") ?? "guest");
+            h.Username(rabbitUser);
+            h.Password(rabbitPass);
         });
 
         cfg.ReceiveEndpoint("user-created-queue", e =>
