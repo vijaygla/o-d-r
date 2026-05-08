@@ -19,9 +19,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseCors("AllowAll");
-
 app.UseRouting();
+
+app.UseCors("AllowAll");
 
 app.MapGet("/", () => "Online Learning Management System API Gateway is running!");
 

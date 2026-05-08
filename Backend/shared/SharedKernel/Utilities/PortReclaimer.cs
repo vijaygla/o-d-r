@@ -10,6 +10,9 @@ public static class PortReclaimer
     /// </summary>
     public static void Reclaim(int portNumber)
     {
+        // Skip on Linux/macOS as PowerShell Get-NetTCPConnection is Windows-specific
+        if (!OperatingSystem.IsWindows()) return;
+
         try
         {
             // Use PowerShell to find the PID owning the port
