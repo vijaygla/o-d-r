@@ -27,27 +27,20 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Must be before UseRouting to handle all preflights and errors correctly
 app.UseCors("AllowAll");
+
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "OLMS API Gateway v1");
+});
 
 app.UseRouting();
 
-// Enable Swagger in all environments
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("v1/swagger.json", "OLMS API Gateway v1");
-    options.RoutePrefix = "swagger";
-});
-
 // Redirect root to swagger
-app.MapGet("/", () => Results.Redirect("/swagger"));
+app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 
-// Map the reverse proxy middleware
 app.MapReverseProxy();
 
 var port = Environment.GetEnvironmentVariable("PORT") ?? "8000";
-
-Console.WriteLine($"🚀 API Gateway is running on port {port}");
-
 app.Run($"http://0.0.0.0:{port}");
