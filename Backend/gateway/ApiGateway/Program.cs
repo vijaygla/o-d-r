@@ -27,9 +27,10 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-app.UseRouting();
-
+// Must be before UseRouting to handle all preflights and errors correctly
 app.UseCors("AllowAll");
+
+app.UseRouting();
 
 // Enable Swagger in all environments
 app.UseSwagger();
@@ -39,7 +40,12 @@ app.UseSwaggerUI(options =>
     options.RoutePrefix = "swagger";
 });
 
-app.MapGet("/", () => Results.Redirect("/swagger"));
+// Use a more robust redirect for the root
+app.MapGet("/", async context => 
+{
+    context.Response.Redirect("/swagger");
+    await Task.CompletedTask;
+});
 
 // Map the reverse proxy middleware
 app.MapReverseProxy();
