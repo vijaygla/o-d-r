@@ -77,23 +77,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Payment Service API", Version = "v1" });
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = "Enter JWT token",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement { { new OpenApiSecurityScheme {
-        Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } }, new string[] { }
-    } });
-});
-
 var app = builder.Build();
 
 // Ensure Database and Tables exist
@@ -115,16 +98,11 @@ _ = Task.Run(async () =>
     }
 });
 
-app.UseSwagger();
-app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Payment Service API v1"); options.RoutePrefix = "swagger"; });
-
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapControllers();
 
 var port = "8013";
 Console.WriteLine($"🚀 Payment Service is running on port {port}");
-Console.WriteLine($"📖 Swagger UI: http://localhost:{port}/swagger");
 
 app.Run($"http://0.0.0.0:{port}");

@@ -105,12 +105,6 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "User Service API", Version = "v1" });
-});
-
 var app = builder.Build();
 
 _ = Task.Run(async () =>
@@ -131,21 +125,12 @@ _ = Task.Run(async () =>
     }
 });
 
-app.UseSwagger();
-app.UseSwaggerUI(options =>
-{
-    options.SwaggerEndpoint("v1/swagger.json", "User Service API v1");
-    options.RoutePrefix = "swagger";
-});
-
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapControllers();
 
 var port = "8011";
 Console.WriteLine($"🚀 User Service is running on port {port}");
-Console.WriteLine($"📖 Swagger UI: http://localhost:{port}/swagger");
 
 app.Run($"http://0.0.0.0:{port}");

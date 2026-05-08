@@ -130,12 +130,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     };
 });
 
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "Notification Service API", Version = "v1" });
-});
-
 var app = builder.Build();
 
 // Ensure Database and Tables exist
@@ -157,20 +151,15 @@ _ = Task.Run(async () =>
     }
 });
 
-app.UseSwagger();
-app.UseSwaggerUI(options => { options.SwaggerEndpoint("v1/swagger.json", "Notification Service API v1"); options.RoutePrefix = "swagger"; });
-
 app.UseCors("AllowFrontend");
 
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapControllers();
 
 var port = "8010";
 PortReclaimer.Reclaim(int.Parse(port));
 
 Console.WriteLine($"🚀 Notification Service is running on port {port}");
-Console.WriteLine($"📖 Swagger UI: http://localhost:{port}/swagger");
 
 app.Run($"http://0.0.0.0:{port}");

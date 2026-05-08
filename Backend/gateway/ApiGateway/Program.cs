@@ -19,10 +19,12 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+app.UseRouting();
+
 app.UseCors("AllowAll");
 
-// Ultra-minimal health check for Render
-app.MapGet("/", () => "OLMS API Gateway is Live. Use /api/auth/swagger/index.html for documentation.");
+// Support both GET and HEAD for Render Health Checks
+app.MapMethods("/", new[] { "GET", "HEAD" }, () => "OLMS API Gateway is Live.");
 
 app.MapReverseProxy();
 
