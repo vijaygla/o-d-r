@@ -134,12 +134,14 @@ _ = Task.Run(async () =>
 app.UseSwagger();
 app.UseSwaggerUI(options =>
 {
-    options.SwaggerEndpoint("/swagger/v1/swagger.json", "User Service API v1");
+    options.SwaggerEndpoint("v1/swagger.json", "User Service API v1");
+    options.RoutePrefix = "swagger";
 });
 
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapGet("/", () => Results.Redirect("/swagger"));
 app.MapControllers();
 
 var port = "8011";

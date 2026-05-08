@@ -19,9 +19,9 @@ builder.Services.AddMassTransit(x =>
 
     x.UsingRabbitMq((context, cfg) =>
     {
-        var rabbitHost = Environment.GetEnvironmentVariable("RABBITMQ_HOST") ?? "localhost";
-        var rabbitUser = Environment.GetEnvironmentVariable("RABBITMQ_USER") ?? "guest";
-        var rabbitPass = Environment.GetEnvironmentVariable("RABBITMQ_PASS") ?? "guest";
+        var rabbitHost = Environment.GetEnvironmentVariable("RabbitMQ__Host") ?? "localhost";
+        var rabbitUser = Environment.GetEnvironmentVariable("RabbitMQ__User") ?? "guest";
+        var rabbitPass = Environment.GetEnvironmentVariable("RabbitMQ__Password") ?? "guest";
         var rabbitVHost = Environment.GetEnvironmentVariable("RabbitMQ__VHost") ?? "/";
 
         cfg.Host(rabbitHost, rabbitVHost, h =>
@@ -101,7 +101,11 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Search Service API v1"); options.RoutePrefix = "swagger"; });
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("v1/swagger.json", "Search Service API v1");
+    options.RoutePrefix = "swagger";
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
