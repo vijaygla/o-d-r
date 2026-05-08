@@ -1,14 +1,6 @@
 using SharedKernel.Utilities;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// Add Swagger services
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new OpenApiInfo { Title = "OLMS API Gateway", Version = "v1" });
-});
 
 // Add YARP services and load configuration from appsettings.json
 builder.Services.AddReverseProxy()
@@ -29,16 +21,8 @@ var app = builder.Build();
 
 app.UseCors("AllowAll");
 
-app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "OLMS API Gateway v1");
-});
-
-app.UseRouting();
-
-// Redirect root to swagger
-app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
+// Ultra-minimal health check for Render
+app.MapGet("/", () => "OLMS API Gateway is Live. Use /api/auth/swagger/index.html for documentation.");
 
 app.MapReverseProxy();
 
