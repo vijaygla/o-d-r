@@ -115,7 +115,7 @@ _ = Task.Run(async () =>
 });
 
 app.UseSwagger();
-app.UseSwaggerUI(options => { options.SwaggerEndpoint("/swagger/v1/swagger.json", "Discussion Service API v1"); options.RoutePrefix = "swagger"; });
+app.UseSwaggerUI(options => { options.SwaggerEndpoint("v1/swagger.json", "Discussion Service API v1"); options.RoutePrefix = "swagger"; });
 
 app.UseAuthentication();
 app.UseAuthorization();

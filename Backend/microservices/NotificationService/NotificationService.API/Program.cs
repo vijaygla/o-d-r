@@ -158,7 +158,7 @@ _ = Task.Run(async () =>
 });
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(options => { options.SwaggerEndpoint("v1/swagger.json", "Notification Service API v1"); options.RoutePrefix = "swagger"; });
 
 app.UseCors("AllowFrontend");
 

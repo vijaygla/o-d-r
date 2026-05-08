@@ -1,6 +1,14 @@
 using SharedKernel.Utilities;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Add Swagger services
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo { Title = "OLMS API Gateway", Version = "v1" });
+});
 
 // Add YARP services and load configuration from appsettings.json
 builder.Services.AddReverseProxy()
@@ -23,7 +31,15 @@ app.UseRouting();
 
 app.UseCors("AllowAll");
 
-app.MapGet("/", () => "Online Learning Management System API Gateway is running!");
+// Enable Swagger in all environments
+app.UseSwagger();
+app.UseSwaggerUI(options =>
+{
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "OLMS API Gateway v1");
+    options.RoutePrefix = "swagger";
+});
+
+app.MapGet("/", () => Results.Redirect("/swagger"));
 
 // Map the reverse proxy middleware
 app.MapReverseProxy();
