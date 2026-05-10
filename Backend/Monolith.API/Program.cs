@@ -1,6 +1,8 @@
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.IdentityModel.Tokens;
 using MassTransit;
 using SharedKernel.Utilities;
@@ -82,7 +84,6 @@ builder.Services.AddScoped<UserService.Application.Interfaces.IUserService, User
 // MassTransit
 builder.Services.AddMassTransit(x =>
 {
-    // Auto-discover consumers
     var consumerAssemblies = AppDomain.CurrentDomain.GetAssemblies()
         .Where(a => a.FullName!.Contains("Service")).ToArray();
     x.AddConsumers(consumerAssemblies);
@@ -137,6 +138,73 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+// --- Non-blocking Database Initialization ---
+_ = Task.Run(async () =>
+{
+    await Task.Delay(5000); 
+    using var scope = app.Services.CreateScope();
+    var provider = scope.ServiceProvider;
+    var dbContexts = new DbContext[]
+    {
+        provider.GetRequiredService<AssessmentService.Infrastructure.Data.AssessmentDbContext>(),
+        provider.GetRequiredService<CategoryService.Infrastructure.Data.CategoryDbContext>(),
+        provider.GetRequiredService<CertificateService.Infrastructure.Data.CertificateDbContext>(),
+        provider.GetRequiredService<ContentService.Infrastructure.Data.ContentDbContext>(),
+        provider.GetRequiredService<CourseService.Infrastructure.Data.CourseDbContext>(),
+        provider.GetRequiredService<DiscussionService.Infrastructure.Data.DiscussionDbContext>(),
+        provider.GetRequiredService<EnrollmentService.Infrastructure.Data.EnrollmentDbContext>(),
+        provider.GetRequiredService<IdentityService.Infrastructure.Data.AppDbContext>(),
+        provider.GetRequiredService<MediaService.Infrastructure.Data.MediaDbContext>(),
+        provider.GetRequiredService<NotificationService.Infrastructure.Data.NotificationDbContext>(),
+        provider.GetRequiredService<PaymentService.Infrastructure.Data.PaymentDbContext>(),
+        provider.GetRequiredService<ProgressService.Infrastructure.Data.ProgressDbContext>(),
+        provider.GetRequiredService<ReviewService.Infrastructure.Data.ReviewDbContext>(),
+        provider.GetRequiredService<UserService.Infrastructure.Data.UserDbContext>()
+    };
+
+    foreach (var dbContext in dbContexts)
+    {
+        try
+        {
+            var databaseCreator = dbContext.GetService<IRelationalDatabaseCreator>();
+            if (!databaseCreator.Exists()) databaseCreator.Create();
+            try { databaseCreator.CreateTables(); } catch { }
+            Console.WriteLine($"? Database for {dbContext.GetType().Name} initialized.");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"? Error initializing {dbContext.GetType().Name}: {ex.Message}");
+        }
+    }
+
+    // Seed Admin User
+    try
+    {
+        var identityDb = provider.GetRequiredService<IdentityService.Infrastructure.Data.AppDbContext>();
+        var adminEmail = Environment.GetEnvironmentVariable("ADMIN_EMAIL") ?? "admin@olms.com";
+        var adminPassword = Environment.GetEnvironmentVariable("ADMIN_PASSWORD") ?? "Admin@123";
+
+        if (!identityDb.Users.Any(u => u.Email == adminEmail))
+        {
+            var adminUser = new IdentityService.Domain.Entities.User
+            {
+                Id = Guid.NewGuid(),
+                Name = "System Admin",
+                Email = adminEmail,
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword),
+                Role = "Admin"
+            };
+            identityDb.Users.Add(adminUser);
+            identityDb.SaveChanges();
+            Console.WriteLine($"?? Admin user created: {adminEmail}");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"? Admin seeding error: {ex.Message}");
+    }
+});
 
 app.UseCors("AllowAll");
 app.UseAuthentication();

@@ -46,6 +46,7 @@
     <ProjectReference Include="..\Modules\ReviewService.Infrastructure\ReviewService.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\SearchService.Infrastructure\SearchService.Infrastructure.csproj" />
     <ProjectReference Include="..\Modules\UserService.Infrastructure\UserService.Infrastructure.csproj" />
+    <ProjectReference Include="..\shared\SharedKernel\SharedKernel.csproj" />
   </ItemGroup>
 
 </Project>
