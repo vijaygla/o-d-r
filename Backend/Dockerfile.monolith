@@ -1,11 +1,17 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy everything
+# Copy the entire repository (assumes context is root)
 COPY . .
 
-# Publish the monolith service
-RUN dotnet publish Monolith.API/Monolith.API.csproj -c Release -o /app/publish
+# Detect if we are in the root or in the Backend folder and publish accordingly
+RUN if [ -d "Backend/Monolith.API" ]; then \
+        dotnet publish Backend/Monolith.API/Monolith.API.csproj -c Release -o /app/publish; \
+    elif [ -d "Monolith.API" ]; then \
+        dotnet publish Monolith.API/Monolith.API.csproj -c Release -o /app/publish; \
+    else \
+        echo "Error: Could not find Monolith.API project"; exit 1; \
+    fi
 
 # Runtime image
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
